@@ -2,20 +2,29 @@ package module
 
 import (
 	"errors"
-	"math/rand"
+	"fmt"
 )
 
 type RoundRobin struct {
+	currentIndex int
+}
+
+func init() {
+	RegistBalance("RoundRobin", &RoundRobin{})
 }
 
 func (this *RoundRobin) Dobalance(insts []*Instance) (inst *Instance, err error) {
-	//todo ...
+	fmt.Println("use RoundRobin balancer...")
 	if len(insts) == 0 {
 		err = errors.New("no insts")
 		return
 	}
 	instsNum := len(insts)
-	index := rand.Intn(instsNum)
+	if this.currentIndex == instsNum {
+		this.currentIndex = 0
+	}
+	index := this.currentIndex
 	inst = insts[index]
+	this.currentIndex++
 	return
 }
