@@ -12,4 +12,5 @@ func main() {
 	sort.Ints(arr[:])
 	fmt.Println("arr = ", arr)
 	fmt.Println("hello world~", i, arr)
+	fmt.Println(j)
 }

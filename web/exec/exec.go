@@ -87,7 +87,7 @@ func Exec(wget_url string) int {
 	if !Exists(file_path) {
 		err_msg := fmt.Sprintf("file_path[%s] not exists.", file_path)
 		log.Println(err_msg)
-		// panic(err_msg)
+		// panic_test(err_msg)
 		// 创建文件夹
 		err := os.MkdirAll(file_path, os.ModePerm)
 		if err != nil {
