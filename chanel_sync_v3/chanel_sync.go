@@ -4,7 +4,7 @@ import (
 	"fmt"
 )
 
-func writeChan(inchan chan int, exitChan chan bool) {
+func writeChan(inchan chan<- int, exitChan chan bool) {
 	for i := 0; i < 10; i++ {
 		inchan <- i
 	}
@@ -12,7 +12,7 @@ func writeChan(inchan chan int, exitChan chan bool) {
 	exitChan <- true
 }
 
-func readChan(inchan chan int, exitChan chan bool) {
+func readChan(inchan <-chan int, exitChan chan bool) {
 	for {
 		var b, ok = <-inchan
 		if !ok {
