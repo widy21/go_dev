@@ -18,12 +18,12 @@ type ret_json struct {
 日志输出结构设置
 */
 func init() {
-	log.SetPrefix("【UserCenter】")
-	log.SetFlags(log.LstdFlags | log.Lshortfile | log.LUTC)
+	log.SetPrefix("【StoreFile】")
+	log.SetFlags(log.LstdFlags | log.Lshortfile | log.Ldate)
 }
 
 func checkAndDeal(w http.ResponseWriter, r *http.Request) {
-	if r.Method == "post" {
+	if r.Method == "POST" {
 		r.ParseForm() //解析参数，默认是不会解析的
 		log.Println("path", r.URL.Path)
 		log.Println(r.Form) //这些信息是输出到服务器端的打印信息
@@ -42,9 +42,9 @@ func checkAndDeal(w http.ResponseWriter, r *http.Request) {
 		if strings.Trim(user_name, " ") == "root" && strings.Trim(pwd, " ") == "123" && len(filePath) != 0 && len(xmlStr) != 0 {
 			log.Println("login success.")
 			// 开始存储文件到本地
-			exitCode := exec.StoreFile(filePath, xmlStr)
+			exitCode, retMsg := exec.StoreFile(filePath, xmlStr)
 			if exitCode != 0 {
-				result = ret_json{Success: false, Detail: "exec error."}
+				result = ret_json{Success: false, Detail: "exec error: " + retMsg}
 				json.NewEncoder(w).Encode(result)
 			} else {
 				// 返回结果

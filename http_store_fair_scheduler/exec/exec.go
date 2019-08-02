@@ -29,7 +29,7 @@ func Exists(path string) bool {
 
 const defaultFailedCode = 1
 
-func StoreFile(filePath, xmlStr string) int {
+func StoreFile(filePath, xmlStr string) (retCode int, retMsg string) {
 
 	// 如果文件夹不存在，则返回错误
 	arr := strings.Split(filePath, "/")
@@ -39,7 +39,9 @@ func StoreFile(filePath, xmlStr string) int {
 	log.Println("dir = ", dir)
 	if !Exists(dir) {
 		log.Println("dir is not existt ")
-		return defaultFailedCode
+		retCode = defaultFailedCode
+		retMsg = "dir is not existt "
+		return
 	}
 
 	file, error := os.OpenFile(filePath, os.O_RDWR|os.O_CREATE, 755)
@@ -51,5 +53,7 @@ func StoreFile(filePath, xmlStr string) int {
 	writer.WriteString(xmlStr)
 	writer.Flush()
 
-	return 0
+	retCode = 0
+	retMsg = "store file success. "
+	return
 }
