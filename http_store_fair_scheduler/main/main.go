@@ -18,14 +18,15 @@ type ret_json struct {
 日志输出结构设置
 */
 func init() {
-	log.SetPrefix("【StoreFile】")
+
 	log.SetFlags(log.LstdFlags | log.Lshortfile | log.Ldate)
 }
 
 /**
 保存文件到挂载的网盘，方便salt模块执行wget命令时获取文件
 */
-func checkAndDeal(w http.ResponseWriter, r *http.Request) {
+func storeConfigFile(w http.ResponseWriter, r *http.Request) {
+	log.SetPrefix("【StoreFile】")
 	if r.Method == "POST" {
 		r.ParseForm() //解析参数，默认是不会解析的
 		log.Println("path", r.URL.Path)
@@ -74,6 +75,7 @@ func checkAndDeal(w http.ResponseWriter, r *http.Request) {
 执行git命令，提交网盘
 */
 func execGitCommand(w http.ResponseWriter, r *http.Request) {
+	log.SetPrefix("【execGitCommand】")
 	if r.Method == "POST" {
 		r.ParseForm() //解析参数，默认是不会解析的
 		log.Println("path", r.URL.Path)
@@ -138,9 +140,9 @@ func logPanics(handle http.HandlerFunc) http.HandlerFunc {
 
 func main() {
 	// 需要两台机器做负载
-	http.HandleFunc("/store_config_file", logPanics(checkAndDeal))  //保存配置文件
-	http.HandleFunc("/exec_git_command", logPanics(execGitCommand)) //git命令执行，args：目录、命令
-	http.HandleFunc("/ret_json1", logPanics(ret_json1))             //设置访问的路由
+	http.HandleFunc("/store_config_file", logPanics(storeConfigFile)) //保存配置文件
+	http.HandleFunc("/exec_git_command", logPanics(execGitCommand))   //git命令执行，args：目录、命令
+	http.HandleFunc("/ret_json1", logPanics(ret_json1))               //设置访问的路由
 	fmt.Println("listen :9090")
 	err := http.ListenAndServe(":9090", nil) //设置监听的端口
 	if err != nil {

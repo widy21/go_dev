@@ -72,7 +72,7 @@ func RunCommand(name string, args ...string) (stdout string, stderr string, exit
 func ExecGitCommand(filePath string) (retCode int, retMsg string) {
 	// 如果文件夹不存在，则返回错误
 	arr := strings.Split(filePath, "/")
-	fileName := filePath[len(arr)-1]
+	fileName := arr[len(arr)-1]
 	dir := strings.Join(arr[:len(arr)-1], "/")
 	log.Println("fileName = ", fileName)
 	log.Println("dir = ", dir)
@@ -83,9 +83,11 @@ func ExecGitCommand(filePath string) (retCode int, retMsg string) {
 		return
 	}
 
-	command := fmt.Sprintf(`cd %s && git pull && git push;`, dir)
+	//command := fmt.Sprintf(`cd %s && git add %s && git commit -m "add git logic" && git push;`, dir, fileName)
+	// 提交本目录下所有文件，防止别人做的更改影响当前配置文件提交。
+	command := fmt.Sprintf(`cd %s && git add . && git commit -m "add git logic" && git push;`, dir)
 
-	log.Printf("prepare to start cmd[%s]...", command)
+	log.Printf("prepare to start cmd: 【%s】...", command)
 	//执行命令
 	stdout, stderr, exitCode := RunCommand("/bin/bash", "-c", command)
 	log.Println("exec over, exitCode = ", exitCode)
