@@ -30,7 +30,7 @@ func storeConfigFile(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "POST" {
 		r.ParseForm() //解析参数，默认是不会解析的
 		log.Println("path", r.URL.Path)
-		log.Println(r.Form) //这些信息是输出到服务器端的打印信息
+		//log.Println(r.Form) //这些信息是输出到服务器端的打印信息
 
 		user_name := r.Form.Get("user_name")
 		pwd := r.Form.Get("pwd")
@@ -148,4 +148,18 @@ func main() {
 	if err != nil {
 		log.Fatal("ListenAndServe: ", err)
 	}
+
+	/*xmlStr := "bbb"
+	//exitCode, retMsg := exec.StoreFile("/tmp/tw.txt", xmlStr)
+	err := ioutil.WriteFile("/tmp/tw.txt", []byte(xmlStr), 0755)
+	if err != nil {
+		fmt.Println(err)
+	}*/
+
+	//filePath := "/data11/git/hadoop/druid/hadoop/etc/public/whitelist.xml"
+	//filePath := "/data11/git/hadoop/druid/hadoop/etc/public/fair-scheduler.xml"
+	//arr := strings.Split(filePath, "/")
+	//fileName := arr[len(arr)-1]
+	//fmt.Println("file-name = ", fileName)
+
 }

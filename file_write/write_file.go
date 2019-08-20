@@ -17,4 +17,5 @@ func main() {
 		writer.WriteString(fmt.Sprintf("%d\n", rand.Int()))
 	}
 	writer.Flush()
+	defer file.Close()
 }

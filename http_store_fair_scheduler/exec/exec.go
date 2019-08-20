@@ -1,9 +1,9 @@
 package exec
 
 import (
-	"bufio"
 	"bytes"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
@@ -110,25 +110,25 @@ func StoreFile(filePath, xmlStr string) (retCode int, retMsg string) {
 
 	// 如果文件夹不存在，则返回错误
 	arr := strings.Split(filePath, "/")
-	fileName := filePath[len(arr)-1]
+	fileName := arr[len(arr)-1]
 	dir := strings.Join(arr[:len(arr)-1], "/")
 	log.Println("fileName = ", fileName)
 	log.Println("dir = ", dir)
 	if !Exists(dir) {
 		log.Println("dir is not existt ")
 		retCode = defaultFailedCode
-		retMsg = "dir is not existt "
+		retMsg = "dir is not exist "
 		return
 	}
 
-	file, error := os.OpenFile(filePath, os.O_RDWR|os.O_CREATE, 755)
+	//file, error := os.OpenFile(filePath, os.O_RDWR|os.O_CREATE, 755)
+	error := ioutil.WriteFile(filePath, []byte(xmlStr), 0755)
 	if error != nil {
 		log.Println("op file error: ", error)
 	}
-
-	writer := bufio.NewWriter(file)
-	writer.WriteString(xmlStr)
-	writer.Flush()
+	//writer := bufio.NewWriter(file)
+	//writer.WriteString(xmlStr)
+	//writer.Flush()
 
 	retCode = 0
 	retMsg = "store file success. "
