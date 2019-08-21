@@ -21,4 +21,6 @@ func main() {
 
 	// 第一次增加
 	fmt.Println(ret_file)
+	// 第二次增加
+	fmt.Println(ret_file)
 }
