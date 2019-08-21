@@ -18,4 +18,7 @@ func main() {
 	ret_file := filePath[len(filePath)-1]
 	fmt.Println(strings.Join(filePath[:len(filePath)-1], "/"))
 	fmt.Println(ret_file)
+
+	// 第一次增加
+	fmt.Println(ret_file)
 }
