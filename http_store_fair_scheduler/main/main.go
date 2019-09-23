@@ -6,11 +6,25 @@ import (
 	"go_dev/http_store_fair_scheduler/exec"
 	"log"
 	"net/http"
+	"strconv"
 	"strings"
+)
+
+const (
+	//获取文件内容
+	GETFILECONTENT = 2
+	//获取文件
+	GETFILE = 1
 )
 
 type ret_json struct {
 	Success bool   `json:"success"`
+	Detail  string `json:"detail"`
+}
+
+type ret_file_content_json struct {
+	Success bool   `json:"success"`
+	Data    string `json:"file_data"`
 	Detail  string `json:"detail"`
 }
 
@@ -62,6 +76,85 @@ func storeConfigFile(w http.ResponseWriter, r *http.Request) {
 
 			// 返回结果
 			result = ret_json{Success: false, Detail: "param info error..."}
+			json.NewEncoder(w).Encode(result)
+		}
+	} else {
+		log.Println("method error: ", r.URL.Path)
+		json.NewEncoder(w).Encode(ret_json{Success: false, Detail: "path error..."})
+	}
+
+}
+
+/**
+获取配置文件或文件内容
+*/
+func getConfigFile(w http.ResponseWriter, r *http.Request) {
+	log.SetPrefix("【getConfigFile】")
+	if r.Method == "POST" || r.Method == "GET" {
+		r.ParseForm() //解析参数，默认是不会解析的
+		log.Println("path", r.URL.Path)
+
+		user_name := r.Form.Get("user_name")
+		pwd := r.Form.Get("pwd")
+		filePath := r.Form.Get("filePath")
+		//获取数据类型：1-获取文件；2-获取文件内容
+		getType := r.Form.Get("getType")
+		log.Println("user_name=", user_name)
+		log.Println("pwd=", pwd)
+		log.Println("filePath=", filePath)
+		log.Println("getType=", getType)
+
+		result := ret_file_content_json{Success: false, Detail: "deal false."}
+
+		if strings.Trim(user_name, " ") == "root" && strings.Trim(pwd, " ") == "123" && len(filePath) != 0 && len(getType) != 0 {
+			log.Println("login success.")
+
+			// 参数类型转换
+			getTypeInt, error := strconv.Atoi(getType)
+			if error != nil {
+				log.Println("convert getTypeInt error.")
+				result = ret_file_content_json{Success: false, Detail: "convert getTypeInt error "}
+				json.NewEncoder(w).Encode(result)
+			}
+
+			// 开始获取数据
+			if getTypeInt == GETFILE || getTypeInt == GETFILECONTENT {
+				if getTypeInt == GETFILECONTENT {
+					/* 获取文件内容*/
+					exitCode, retMsg := exec.GetFileContent(filePath, getType)
+					if exitCode != 0 {
+						result = ret_file_content_json{Success: false, Detail: "exec error: " + retMsg}
+						json.NewEncoder(w).Encode(result)
+					} else {
+						// 返回结果
+						log.Println("exec success!")
+						result = ret_file_content_json{Success: true, Data: retMsg, Detail: "exec success."}
+						json.NewEncoder(w).Encode(result)
+					}
+				} else {
+					/* 下载文件*/
+					exitCode, retMsg := exec.GetFileContent(filePath, getType)
+					if exitCode != 0 {
+						result = ret_file_content_json{Success: false, Detail: "exec error: " + retMsg}
+						json.NewEncoder(w).Encode(result)
+					} else {
+						// 返回结果
+						log.Println("exec success!")
+						// result = ret_file_content_json{Success: true, Data: retMsg, Detail: "exec success."}
+						w.Write([]byte(retMsg))
+					}
+				}
+			} else {
+				// 返回结果
+				result = ret_file_content_json{Success: false, Detail: fmt.Sprintf("getType value[%v] error...", getType)}
+				json.NewEncoder(w).Encode(result)
+			}
+
+		} else {
+			log.Println("param info error...")
+
+			// 返回结果
+			result = ret_file_content_json{Success: false, Detail: "param info error..."}
 			json.NewEncoder(w).Encode(result)
 		}
 	} else {
@@ -142,6 +235,7 @@ func main() {
 	// 需要两台机器做负载
 	http.HandleFunc("/store_config_file", logPanics(storeConfigFile)) //保存配置文件
 	http.HandleFunc("/exec_git_command", logPanics(execGitCommand))   //git命令执行，args：目录、命令
+	http.HandleFunc("/get_config_file", logPanics(getConfigFile))     //获取配置文件或文件内容
 	http.HandleFunc("/ret_json1", logPanics(ret_json1))               //设置访问的路由
 	fmt.Println("listen :9090")
 	err := http.ListenAndServe(":9090", nil) //设置监听的端口

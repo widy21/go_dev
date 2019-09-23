@@ -134,3 +134,32 @@ func StoreFile(filePath, xmlStr string) (retCode int, retMsg string) {
 	retMsg = "store file success. "
 	return
 }
+
+/**
+读取文件内容
+*/
+func GetFileContent(filePath, xmlStr string) (retCode int, retMsg string) {
+
+	// 如果文件夹不存在，则返回错误
+	arr := strings.Split(filePath, "/")
+	fileName := arr[len(arr)-1]
+	dir := strings.Join(arr[:len(arr)-1], "/")
+	log.Println("fileName = ", fileName)
+	log.Println("dir = ", dir)
+	if !Exists(dir) {
+		log.Println("dir is not existt ")
+		retCode = defaultFailedCode
+		retMsg = "dir is not exist "
+		return
+	}
+
+	fileData, err := ioutil.ReadFile(filePath)
+	if err != nil {
+		log.Println("Read File Err:", err.Error())
+	} else {
+		retCode = 0
+		retMsg = string(fileData)
+	}
+	return
+
+}
