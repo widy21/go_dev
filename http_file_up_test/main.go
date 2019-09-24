@@ -51,6 +51,7 @@ func postFile(filename string, targetUrl string) error {
 // sample usage
 func main() {
 	target_url := "http://localhost:9090/upload"
-	filename := "/Users/huaxiao/Documents/workspace/go/src/go_dev/Alexroom.jpg"
+	//filename := "/Users/huaxiao/Documents/workspace/go/src/go_dev/Alexroom.jpg"
+	filename := "/Users/huaxiao/Documents/workspace/go/src/go_dev/json-lib-2.4-jdk15.jar"
 	postFile(filename, target_url)
 }

@@ -19,6 +19,8 @@ import (
 var dir string
 var port int
 
+const uploadPath = "/tmp/upload"
+
 // 初始化参数
 func init() {
 	dir = path.Dir(os.Args[0])
@@ -28,12 +30,18 @@ func init() {
 }
 
 func main() {
+	// 上传
 	http.HandleFunc("/upload", upload)
+
+	// 下载
+	fs := http.FileServer(http.Dir(uploadPath))
+	http.Handle("/files/", http.StripPrefix("/files", fs))
+
+	log.Println("ListenAndServer port: ", 9090)
 	err := http.ListenAndServe(":"+strconv.Itoa(9090), nil)
 	if err != nil {
 		log.Fatal("ListenAndServe: ", err)
 	}
-	log.Println("ListenAndServer port: ", 9090)
 
 }
 
@@ -49,27 +57,27 @@ func upload(w http.ResponseWriter, r *http.Request) {
 		t.Execute(w, token)
 	} else {
 		r.ParseMultipartForm(32 << 20)
-		file, handler, err := r.FormFile("uploadfile")
+		srcFile, handler, err := r.FormFile("uploadfile")
 		if err != nil {
 			fmt.Println(err)
 			return
 		}
 
-		// fmt.Fprintln("handler.Filename=%s",file.)
+		// fmt.Fprintln("handler.Filename=%s",srcFile.)
 		log.Println("handler.Filename=", handler.Filename)
 		arr := strings.Split(handler.Filename, "/")
 		fileName := arr[len(arr)-1]
 		log.Println("after deal, fileName=", fileName)
-		defer file.Close()
+		defer srcFile.Close()
 		fmt.Fprintf(w, "%v", handler.Header)
 		// destFile, err := os.OpenFile("/tmp/upload/"+handler.Filename, os.O_WRONLY|os.O_CREATE, 0666)
-		destFile, err := os.OpenFile(fmt.Sprintf("/tmp/upload/%s", fileName), os.O_WRONLY|os.O_CREATE, 0666)
+		destFile, err := os.OpenFile(fmt.Sprintf("%s/%s", uploadPath, fileName), os.O_WRONLY|os.O_CREATE, 0666)
 		if err != nil {
 			fmt.Println(err)
 			return
 		}
 		defer destFile.Close()
-		io.Copy(destFile, file)
+		io.Copy(destFile, srcFile)
 		log.Println("upload over...")
 	}
 }
