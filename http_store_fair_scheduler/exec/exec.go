@@ -138,7 +138,7 @@ func StoreFile(filePath, xmlStr string) (retCode int, retMsg string) {
 /**
 读取文件内容
 */
-func GetFileContent(filePath, xmlStr string) (retCode int, retMsg string) {
+func GetFileContent(filePath string) (retCode int, retMsg string) {
 
 	// 如果文件夹不存在，则返回错误
 	arr := strings.Split(filePath, "/")

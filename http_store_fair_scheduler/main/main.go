@@ -1,20 +1,26 @@
 package main
 
 import (
+	"crypto/md5"
 	"encoding/json"
 	"fmt"
 	"go_dev/http_store_fair_scheduler/exec"
+	"html/template"
+	"io"
 	"log"
 	"net/http"
+	"os"
 	"strconv"
 	"strings"
+	"time"
 )
 
 const (
 	//获取文件内容
 	GETFILECONTENT = 2
 	//获取文件
-	GETFILE = 1
+	GETFILE    = 1
+	uploadPath = "/tmp/upload"
 )
 
 type ret_json struct {
@@ -90,7 +96,7 @@ func storeConfigFile(w http.ResponseWriter, r *http.Request) {
 */
 func getConfigFile(w http.ResponseWriter, r *http.Request) {
 	log.SetPrefix("【getConfigFile】")
-	if r.Method == "POST" || r.Method == "GET" {
+	if r.Method == "POST" {
 		r.ParseForm() //解析参数，默认是不会解析的
 		log.Println("path", r.URL.Path)
 
@@ -109,44 +115,15 @@ func getConfigFile(w http.ResponseWriter, r *http.Request) {
 		if strings.Trim(user_name, " ") == "root" && strings.Trim(pwd, " ") == "123" && len(filePath) != 0 && len(getType) != 0 {
 			log.Println("login success.")
 
-			// 参数类型转换
-			getTypeInt, error := strconv.Atoi(getType)
-			if error != nil {
-				log.Println("convert getTypeInt error.")
-				result = ret_file_content_json{Success: false, Detail: "convert getTypeInt error "}
+			/* 获取文件内容*/
+			exitCode, retMsg := exec.GetFileContent(filePath)
+			if exitCode != 0 {
+				result = ret_file_content_json{Success: false, Detail: "exec error: " + retMsg}
 				json.NewEncoder(w).Encode(result)
-			}
-
-			// 开始获取数据
-			if getTypeInt == GETFILE || getTypeInt == GETFILECONTENT {
-				if getTypeInt == GETFILECONTENT {
-					/* 获取文件内容*/
-					exitCode, retMsg := exec.GetFileContent(filePath, getType)
-					if exitCode != 0 {
-						result = ret_file_content_json{Success: false, Detail: "exec error: " + retMsg}
-						json.NewEncoder(w).Encode(result)
-					} else {
-						// 返回结果
-						log.Println("exec success!")
-						result = ret_file_content_json{Success: true, Data: retMsg, Detail: "exec success."}
-						json.NewEncoder(w).Encode(result)
-					}
-				} else {
-					/* 下载文件*/
-					exitCode, retMsg := exec.GetFileContent(filePath, getType)
-					if exitCode != 0 {
-						result = ret_file_content_json{Success: false, Detail: "exec error: " + retMsg}
-						json.NewEncoder(w).Encode(result)
-					} else {
-						// 返回结果
-						log.Println("exec success!")
-						// result = ret_file_content_json{Success: true, Data: retMsg, Detail: "exec success."}
-						w.Write([]byte(retMsg))
-					}
-				}
 			} else {
 				// 返回结果
-				result = ret_file_content_json{Success: false, Detail: fmt.Sprintf("getType value[%v] error...", getType)}
+				log.Println("exec success!")
+				result = ret_file_content_json{Success: true, Data: retMsg, Detail: "exec success."}
 				json.NewEncoder(w).Encode(result)
 			}
 
@@ -231,13 +208,58 @@ func logPanics(handle http.HandlerFunc) http.HandlerFunc {
 	}
 }
 
+// 处理/upload 逻辑
+func upload(w http.ResponseWriter, r *http.Request) {
+	log.SetPrefix("【upload】")
+	log.Println("method:", r.Method) //获取请求的方法
+	if r.Method == "GET" {
+		crutime := time.Now().Unix()
+		h := md5.New()
+		io.WriteString(h, strconv.FormatInt(crutime, 10))
+		token := fmt.Sprintf("%x", h.Sum(nil))
+		t, _ := template.ParseFiles("upload.gtpl")
+		t.Execute(w, token)
+	} else {
+		r.ParseMultipartForm(32 << 20)
+		srcFile, handler, err := r.FormFile("uploadfile")
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+
+		// fmt.Fprintln("handler.Filename=%s",srcFile.)
+		log.Println("handler.Filename=", handler.Filename)
+		arr := strings.Split(handler.Filename, "/")
+		fileName := arr[len(arr)-1]
+		log.Println("after deal, fileName=", fileName)
+		defer srcFile.Close()
+		fmt.Fprintf(w, "%v", handler.Header)
+		// destFile, err := os.OpenFile("/tmp/upload/"+handler.Filename, os.O_WRONLY|os.O_CREATE, 0666)
+		destFile, err := os.OpenFile(fmt.Sprintf("%s/%s", uploadPath, fileName), os.O_WRONLY|os.O_CREATE, 0666)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		defer destFile.Close()
+		io.Copy(destFile, srcFile)
+		log.Println("upload over...")
+	}
+}
+
 func main() {
 	// 需要两台机器做负载
 	http.HandleFunc("/store_config_file", logPanics(storeConfigFile)) //保存配置文件
 	http.HandleFunc("/exec_git_command", logPanics(execGitCommand))   //git命令执行，args：目录、命令
 	http.HandleFunc("/get_config_file", logPanics(getConfigFile))     //获取配置文件或文件内容
 	http.HandleFunc("/ret_json1", logPanics(ret_json1))               //设置访问的路由
+	// 上传
+	http.HandleFunc("/upload", logPanics(upload))
+	// 下载
+	fs := http.FileServer(http.Dir(uploadPath))
+	http.Handle("/files/", http.StripPrefix("/files", fs))
+
 	fmt.Println("listen :9090")
+
 	err := http.ListenAndServe(":9090", nil) //设置监听的端口
 	if err != nil {
 		log.Fatal("ListenAndServe: ", err)

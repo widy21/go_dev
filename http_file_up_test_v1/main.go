@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"flag"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -50,9 +51,16 @@ func postFile(filename string, targetUrl string) error {
 
 // sample usage
 func main() {
-	//target_url := "http://localhost:9090/upload"
+	if len(os.Args) == 1 {
+		fmt.Println("there is no arg...")
+		return
+	}
+	var inputfilename string
+	flag.StringVar(&inputfilename, "f", "", "no balncer name after [-f]")
+	flag.Parse()
+	fmt.Printf("[-b] inputfilename=%s \n", inputfilename)
 	target_url := "http://commoncfg.jd.com/upload"
 	//filename := "/Users/huaxiao/Documents/workspace/go/src/go_dev/Alexroom.jpg"
-	filename := "/Users/huaxiao/Documents/workspace/go/src/go_dev/json-lib-2.4-jdk15.jar"
-	postFile(filename, target_url)
+	//filename := "/Users/huaxiao/Documents/workspace/go/src/go_dev/json-lib-2.4-jdk15.jar"
+	postFile(inputfilename, target_url)
 }
