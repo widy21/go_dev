@@ -235,7 +235,7 @@ func upload(w http.ResponseWriter, r *http.Request) {
 		defer srcFile.Close()
 		fmt.Fprintf(w, "%v", handler.Header)
 		// destFile, err := os.OpenFile("/tmp/upload/"+handler.Filename, os.O_WRONLY|os.O_CREATE, 0666)
-		destFile, err := os.OpenFile(fmt.Sprintf("%s/%s", uploadPath, fileName), os.O_WRONLY|os.O_CREATE, 0666)
+		destFile, err := os.OpenFile(fmt.Sprintf("%s/%s", uploadPath, fileName), os.O_WRONLY|os.O_TRUNC|os.O_CREATE, 0666)
 		if err != nil {
 			fmt.Println(err)
 			return
