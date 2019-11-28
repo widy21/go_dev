@@ -20,7 +20,7 @@ const (
 	GETFILECONTENT = 2
 	//获取文件
 	GETFILE    = 1
-	uploadPath = "/tmp/upload"
+	uploadPath = "/data1/upload"
 )
 
 type ret_json struct {
