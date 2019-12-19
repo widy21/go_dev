@@ -56,14 +56,20 @@ func storeConfigFile(w http.ResponseWriter, r *http.Request) {
 		pwd := r.Form.Get("pwd")
 		filePath := r.Form.Get("filePath")
 		xmlStr := r.Form.Get("xmlStr")
+		configFileType := r.Form.Get("configFileType")
+
 		log.Println("user_name=", user_name)
 		log.Println("pwd=", pwd)
 		log.Println("filePath=", filePath)
 		log.Println("xmlStr=", xmlStr)
+		log.Println("configFileType=", configFileType)
 
 		result := ret_json{Success: false, Detail: "deal false."}
 
-		if strings.Trim(user_name, " ") == "root" && strings.Trim(pwd, " ") == "123" && len(filePath) != 0 && len(xmlStr) != 0 {
+		if strings.Trim(user_name, " ") == "root" &&
+			strings.Trim(pwd, " ") == "123" &&
+			len(filePath) != 0 &&
+			checkConfigFileType(configFileType, xmlStr) {
 			log.Println("login success.")
 			// 开始存储文件到本地
 			exitCode, retMsg := exec.StoreFile(filePath, xmlStr)
@@ -89,6 +95,16 @@ func storeConfigFile(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(ret_json{Success: false, Detail: "path error..."})
 	}
 
+}
+
+func checkConfigFileType(configFileType string, xmlStr string) bool {
+	log.Println("in checkConfigFileType()...")
+	if strings.Trim(configFileType, " ") != "cluster_node" && len(xmlStr) == 0 {
+		log.Println("in checkConfigFileType(), configFileType != cluster_node && len(xmlStr) == 0," +
+			"will return false...")
+		return false
+	}
+	return true
 }
 
 /**
