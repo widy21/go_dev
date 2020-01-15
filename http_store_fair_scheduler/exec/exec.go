@@ -119,31 +119,25 @@ func StoreFile(filePath, xmlStr string) (retCode int, retMsg string) {
 	log.Println("fileName = ", fileName)
 	log.Println("bak_file_path = ", bak_file_path)
 	log.Println("dir = ", dir)
+
+	// 如果目录不存在，则返回错误
 	if !Exists(dir) {
-		// 如果目录不存在，则创建目录。
-		log.Println("dir is not exist, prepare to create it. ")
-		//retCode = defaultFailedCode
-		//retMsg = "dir is not exist "
-		error := os.MkdirAll(dir, 0755)
-		if error != nil {
-			log.Println("MkdirAll error: ", error)
-			retCode = defaultFailedCode
-			retMsg = "MkdirAll error. "
-			return
-		}
-		log.Println("MkdirAll success. ")
-	} else {
-		// 如果目录存在，备份旧文件
-		command := fmt.Sprintf(`cp %s %s;`, filePath, bak_file_path)
-		log.Printf("prepare to start cmd: 【%s】...", command)
-		//执行命令
-		stdout, stderr, exitCode := RunCommand("/bin/bash", "-c", command)
-		log.Println("exec over, exitCode = ", exitCode)
-		if exitCode != 0 {
-			retMsg = fmt.Sprintf("%s --- %s", stdout, stderr)
-			retCode = exitCode
-			return
-		}
+		log.Println("dir is not existt ")
+		retCode = defaultFailedCode
+		retMsg = "dir is not exist "
+		return
+	}
+
+	// 备份旧文件
+	command := fmt.Sprintf(`cp %s %s;`, filePath, bak_file_path)
+	log.Printf("prepare to start cmd: 【%s】...", command)
+	//执行命令
+	stdout, stderr, exitCode := RunCommand("/bin/bash", "-c", command)
+	log.Println("exec over, exitCode = ", exitCode)
+	if exitCode != 0 {
+		retMsg = fmt.Sprintf("%s --- %s", stdout, stderr)
+		retCode = exitCode
+		return
 	}
 
 	// 写入新文件
