@@ -9,6 +9,7 @@ import (
 	"os/exec"
 	"strings"
 	"syscall"
+	"time"
 )
 
 /**
@@ -65,7 +66,7 @@ func RunCommand(name string, args ...string) (stdout string, stderr string, exit
 		ws := cmd.ProcessState.Sys().(syscall.WaitStatus)
 		exitCode = ws.ExitStatus()
 	}
-	fmt.Printf("command result, stdout: %v, stderr: %v, exitCode: %v", stdout, stderr, exitCode)
+	log.Printf("command result, stdout: %v, stderr: %v, exitCode: %v", stdout, stderr, exitCode)
 	return
 }
 
@@ -112,23 +113,44 @@ func StoreFile(filePath, xmlStr string) (retCode int, retMsg string) {
 	arr := strings.Split(filePath, "/")
 	fileName := arr[len(arr)-1]
 	dir := strings.Join(arr[:len(arr)-1], "/")
+	// 当前时间
+	timeStr := time.Now().Format("20060102150405")
+	bak_file_path := fmt.Sprintf(`%s/%s_%s`, dir, fileName, timeStr)
 	log.Println("fileName = ", fileName)
+	log.Println("bak_file_path = ", bak_file_path)
 	log.Println("dir = ", dir)
 	if !Exists(dir) {
-		log.Println("dir is not existt ")
-		retCode = defaultFailedCode
-		retMsg = "dir is not exist "
-		return
+		// 如果目录不存在，则创建目录。
+		log.Println("dir is not exist, prepare to create it. ")
+		//retCode = defaultFailedCode
+		//retMsg = "dir is not exist "
+		error := os.MkdirAll(dir, 0755)
+		if error != nil {
+			log.Println("MkdirAll error: ", error)
+			retCode = defaultFailedCode
+			retMsg = "MkdirAll error. "
+			return
+		}
+		log.Println("MkdirAll success. ")
+	} else {
+		// 如果目录存在，备份旧文件
+		command := fmt.Sprintf(`cp %s %s;`, filePath, bak_file_path)
+		log.Printf("prepare to start cmd: 【%s】...", command)
+		//执行命令
+		stdout, stderr, exitCode := RunCommand("/bin/bash", "-c", command)
+		log.Println("exec over, exitCode = ", exitCode)
+		if exitCode != 0 {
+			retMsg = fmt.Sprintf("%s --- %s", stdout, stderr)
+			retCode = exitCode
+			return
+		}
 	}
 
-	//file, error := os.OpenFile(filePath, os.O_RDWR|os.O_CREATE, 755)
+	// 写入新文件
 	error := ioutil.WriteFile(filePath, []byte(xmlStr), 0755)
 	if error != nil {
 		log.Println("op file error: ", error)
 	}
-	//writer := bufio.NewWriter(file)
-	//writer.WriteString(xmlStr)
-	//writer.Flush()
 
 	retCode = 0
 	retMsg = "store file success. "
