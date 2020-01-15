@@ -86,7 +86,7 @@ func ExecGitCommand(filePath string) (retCode int, retMsg string) {
 
 	//command := fmt.Sprintf(`cd %s && git add %s && git commit -m "add git logic" && git push;`, dir, fileName)
 	// 提交本目录下所有文件，防止别人做的更改影响当前配置文件提交。
-	command := fmt.Sprintf(`cd %s && git add . && git commit -m "add git logic" && git push;`, dir)
+	command := fmt.Sprintf(`cd %s && git add . && git commit -m "add git logic" && git pull && git push;`, dir)
 
 	log.Printf("prepare to start cmd: 【%s】...", command)
 	//执行命令
