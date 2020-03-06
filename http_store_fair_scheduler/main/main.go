@@ -269,10 +269,10 @@ func main() {
 	http.HandleFunc("/get_config_file", logPanics(getConfigFile))     //获取配置文件或文件内容
 	http.HandleFunc("/ret_json1", logPanics(ret_json1))               //设置访问的路由
 	// 上传
-	http.HandleFunc("/upload", logPanics(upload))
+	http.HandleFunc("/upload", logPanics(upload)) // 上传文件，hbase使用。
 	// 下载
 	fs := http.FileServer(http.Dir(uploadPath))
-	http.Handle("/files/", http.StripPrefix("/files", fs))
+	http.Handle("/files/", http.StripPrefix("/files", fs)) // 下载文件，hbase使用。
 
 	fmt.Println("listen :9090")
 

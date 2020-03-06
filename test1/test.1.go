@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"os"
+	"regexp"
 	"sort"
 	"strings"
 )
@@ -20,9 +22,35 @@ func main() {
 	fmt.Println(ret_file)
 
 	// 第一次增加
-	fmt.Println(ret_file)
+	//fmt.Println(ret_file)
 	// 第二次增加
-	fmt.Println(ret_file)
+	//fmt.Println(ret_file)
 	// 第三次增加
-	fmt.Println(ret_file)
+	//fmt.Println(ret_file)
+
+	// ---
+	//s := " 100 Mb/s"
+	s := "Speed: Unknown!"
+
+	fields := strings.Split(strings.TrimSpace(s), ":")
+	if len(fields) != 2 {
+		fmt.Println("len(fields)!=2")
+		os.Exit(-1)
+	}
+	if strings.ToLower(strings.TrimSpace(fields[0])) != "speed" {
+		fmt.Println("TrimSpace(fields[0])!=speed")
+		os.Exit(-2)
+	}
+
+	compile := regexp.MustCompile("^[[:space:]]*([[:digit:]]+)[[:space:]]*Mb/s[[:space:]]*$")
+	fmt.Println("fields[1]=", fields[1])
+	speed := compile.FindStringSubmatch(fields[1])
+	fmt.Println("len(speed)= ", len(speed))
+	fmt.Println("speed= ", speed)
+
+	if len(speed) <= 1 {
+		fmt.Println("len(speed)<= 1, will exist...")
+		os.Exit(-3)
+	}
+
 }

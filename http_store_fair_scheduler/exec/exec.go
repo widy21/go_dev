@@ -146,6 +146,18 @@ func StoreFile(filePath, xmlStr string) (retCode int, retMsg string) {
 		log.Println("op file error: ", error)
 	}
 
+	// 修改文件换行符
+	dosCommand := fmt.Sprintf(`dos2unix %s;`, filePath)
+	log.Printf("prepare to dos2unix cmd: 【%s】...", dosCommand)
+	//执行命令
+	stdout1, stderr1, exitCode1 := RunCommand("/bin/bash", "-c", dosCommand)
+	log.Println("exec over, exitCode1 = ", exitCode1)
+	if exitCode1 != 0 {
+		retMsg = fmt.Sprintf("%s --- %s", stdout1, stderr1)
+		retCode = exitCode1
+		return
+	}
+
 	retCode = 0
 	retMsg = "store file success. "
 	return
