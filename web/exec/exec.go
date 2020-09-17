@@ -10,7 +10,6 @@ import (
 	"os/exec"
 	"strings"
 	"syscall"
-	"time"
 )
 
 func get_file(file_path string) string {
@@ -82,8 +81,11 @@ func RunCommand(name string, args ...string) (stdout string, stderr string, exit
 func Exec(wget_url string) int {
 	// 当前时间
 	// timeStr:=time.Now().Format("2006-01-02 15:04:05")
-	timeStr := time.Now().Format("20060102")
-	file_path := fmt.Sprintf(`/root/root/%ssre`, timeStr)
+	//timeStr := time.Now().Format("20060102")
+	//file_path := fmt.Sprintf(`/root/root/%ssre`, timeStr)
+
+	//不再按照时间分包，方便再次执行前日失败的任务 -- 2020-09-17 14:47:15修改。
+	file_path := `/root/root/sre`
 	if !Exists(file_path) {
 		err_msg := fmt.Sprintf("file_path[%s] not exists.", file_path)
 		log.Println(err_msg)

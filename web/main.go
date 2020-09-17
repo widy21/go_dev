@@ -100,8 +100,8 @@ func main() {
 	http.HandleFunc("/get_tar_file", checkAndDeal) //设置访问的路由
 	http.HandleFunc("/ret_json1", ret_json1)       //设置访问的路由
 	http.HandleFunc("/", foo)
-	fmt.Println("listen :9090")
-	err := http.ListenAndServe(":9090", nil) //设置监听的端口
+	fmt.Println("listen :9099")
+	err := http.ListenAndServe(":9099", nil) //设置监听的端口
 	if err != nil {
 		log.Fatal("ListenAndServe: ", err)
 	}
