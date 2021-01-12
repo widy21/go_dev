@@ -122,3 +122,28 @@ func Exec(wget_url string) int {
 	log.Println("genarate md5 file over...")
 	return 0
 }
+
+func ExecWithFilePath(wget_url, file_path string) int {
+	if !Exists(file_path) {
+		err_msg := fmt.Sprintf("file_path[%s] not exists.", file_path)
+		log.Println(err_msg)
+		panic(err_msg)
+	}
+	arr := strings.Split(wget_url, "/")
+	ret_file := arr[len(arr)-1]
+	command := fmt.Sprintf(`wget -t 1 --timeout=120 -P %s %s -O %s/%s`, file_path, wget_url, file_path, ret_file)
+	// command := fmt.Sprintf(`wget -t 1 --timeout=10 -P %s %s -O %s`, file_path, wget_url, ret_file)
+	// cmd := exec.Command("/bin/bash", "-c", `wget -P /tmp/testweb http://www.microbrew.org/tools/md5sha1sum/md5sha1sum-0.9.5.tar.gz`)
+
+	log.Println("command = ", command)
+	log.Println("prepare to start cmd...")
+	//执行命令
+	_, _, exitCode := RunCommand("/bin/bash", "-c", command)
+	log.Println("exec over, exitCode = ", exitCode)
+
+	if exitCode != 0 {
+		return exitCode
+	}
+
+	return 0
+}

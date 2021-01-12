@@ -65,7 +65,60 @@ func checkAndDeal(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("path error: ", r.URL.Path)
 		json.NewEncoder(w).Encode(ret_json{Success: false, Detail: "path error..."})
 	}
+}
 
+/**
+带指定路径的包下载
+*/
+func get_file(w http.ResponseWriter, r *http.Request) {
+	if r.URL.Path == "/get_file" {
+		r.ParseForm() //解析参数，默认是不会解析的
+		// fmt.Println(r.Form) //这些信息是输出到服务器端的打印信息
+		fmt.Println("path=", r.URL.Path)
+		// fmt.Println("scheme", r.URL.Scheme)
+		// fmt.Println("url_long=", r.Form["url_long"])
+
+		user_name := r.Form.Get("user_name")
+		pwd := r.Form.Get("pwd")
+		wget_url := r.Form.Get("wget_url")
+		file_path := r.Form.Get("file_path")
+
+		fmt.Println("user_name=", user_name)
+		fmt.Println("pwd=", pwd)
+		fmt.Println("wget_url=", wget_url)
+		fmt.Println("file_path=", file_path)
+
+		result := ret_json{Success: false, Detail: "deal false."}
+
+		if strings.Trim(user_name, " ") == "test" && strings.Trim(pwd, " ") == "123" && len(wget_url) != 0 && len(file_path) != 0 {
+			// for k, v := range r.Form {
+			// 	fmt.Println("key:", k)
+			// 	fmt.Println("val:", strings.Join(v, ","))
+			// }
+			fmt.Println("login success.")
+			exitCode := exec.ExecWithFilePath(wget_url, file_path)
+			if exitCode != 0 {
+				result = ret_json{Success: false, Detail: "exec error."}
+				json.NewEncoder(w).Encode(result)
+			} else {
+				// 返回结果
+				// fmt.Fprintf(w, "exec success!") //这个写入到w的是输出到客户端的
+				result = ret_json{Success: true, Detail: "exec success."}
+				json.NewEncoder(w).Encode(result)
+			}
+
+		} else {
+			fmt.Println("user info error...")
+
+			// 返回结果
+			// fmt.Fprintf(w, "param info error...")
+			result = ret_json{Success: false, Detail: "param info error..."}
+			json.NewEncoder(w).Encode(result)
+		}
+	} else {
+		fmt.Println("path error: ", r.URL.Path)
+		json.NewEncoder(w).Encode(ret_json{Success: false, Detail: "path error..."})
+	}
 }
 
 func ret_json1(w http.ResponseWriter, r *http.Request) {
@@ -98,10 +151,11 @@ func foo(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 	http.HandleFunc("/get_tar_file", checkAndDeal) //设置访问的路由
+	http.HandleFunc("/get_file", get_file)         //设置访问的路由
 	http.HandleFunc("/ret_json1", ret_json1)       //设置访问的路由
 	http.HandleFunc("/", foo)
-	fmt.Println("listen :9099")
-	err := http.ListenAndServe(":9099", nil) //设置监听的端口
+	fmt.Println("listen :9001")
+	err := http.ListenAndServe(":9001", nil) //设置监听的端口
 	if err != nil {
 		log.Fatal("ListenAndServe: ", err)
 	}
